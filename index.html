@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contestação de Monitoria — Turbi (CÓPIA DE TESTE)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header .logo {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .intro {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .teste {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            font-size: 13px;
+            color: #92400e;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            padding: 25px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-number {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 16px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .required {
+            color: #dc2626;
+        }
+
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="text"]:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+            color: #999;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .two-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .two-cols {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .checkbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+            accent-color: #667eea;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 400;
+            font-size: 14px;
+        }
+
+        .attention {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #b45309;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        button[type="submit"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button[type="reset"] {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        button[type="reset"]:hover {
+            background: #d0d0d0;
+        }
+
+        .success {
+            display: none;
+            background: #ecfdf5;
+            border: 2px solid #10b981;
+            border-radius: 8px;
+            padding: 30px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .success.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .success h3 {
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+
+        .protocol {
+            background: #10b981;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 13px;
+            border-left: 4px solid #dc2626;
+        }
+
+        .error.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">turbi</div>
+            <h1>📋 Reanálise de Qualidade</h1>
+            <p>Contestação de Monitoria</p>
+        </div>
+
+        <div class="content">
+            <p class="teste"><b>CÓPIA DE TESTE.</b> As contestações enviadas aqui NÃO chegam ao time de qualidade: vão para uma planilha de teste. Esta não é a página oficial.</p>
+
+            <p class="intro">Registre sua contestação de reanálise. Os dados são salvos diretamente na planilha de controle.</p>
+
+            <div class="error" id="errorDiv"></div>
+
+            <form id="form">
+                <!-- SEÇÃO 1 -->
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-number">1</div>
+                        <div>
+                            <h2 class="section-title">Identificação do Chamado</h2>
+                            <p class="section-subtitle">Informações básicas da reanálise</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="chamado">ID do Chamado <span class="required">*</span></label>
+                        <input type="text" id="chamado" required>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 2 -->
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-number">2</div>
+                        <div>
+                            <h2 class="section-title">Responsáveis</h2>
+                            <p class="section-subtitle">Analista e supervisor da contestação</p>
+                        </div>
+                    </div>
+                    <div class="two-cols">
+                        <div class="form-group">
+                            <label for="analista">Analista Responsável <span class="required">*</span></label>
+                            <select id="analista" required>
+                                <option value="">— Selecione —</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="supervisor">Supervisor</label>
+                            <input type="text" id="supervisor" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 3 -->
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-number">3</div>
+                        <div>
+                            <h2 class="section-title">Critérios Contestados</h2>
+                            <p class="section-subtitle">Selecione apenas os critérios que deseja contestar.</p>
+                        </div>
+                    </div>
+                    <div class="checkbox-list">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="c1" value="Condução - Comunicação clara">
+                            <label for="c1">Condução - Comunicação clara</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="c2" value="Condução - Resposta a todas as perguntas">
+                            <label for="c2">Condução - Resposta a todas as perguntas</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="c3" value="Processos - Autoatendimento">
+                            <label for="c3">Processos - Autoatendimento</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="c4" value="Comportamento - Encerramento abrupto">
+                            <label for="c4">Comportamento - Encerramento abrupto</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="c5" value="Comportamento - Descaso/Frieza">
+                            <label for="c5">Comportamento - Descaso/Frieza</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="c6" value="Compliance - LGPD">
+                            <label for="c6">Compliance - LGPD</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 4 -->
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-number">4</div>
+                        <div>
+                            <h2 class="section-title">Justificativa e Evidências</h2>
+                            <p class="section-subtitle">Explique sua posição com detalhes</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="justificativa">Justificativa Detalhada <span class="required">*</span></label>
+                        <textarea id="justificativa" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="evidencia">Link de Evidências (opcional)</label>
+                        <input type="text" id="evidencia" placeholder="https://...">
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <button type="submit">Registrar Reanálise</button>
+                    <button type="reset">Nova Reanálise</button>
+                </div>
+
+                <div class="success" id="success">
+                    <div class="success-icon">✅</div>
+                    <h3>Reanálise Registrada com Sucesso!</h3>
+                    <p>TESTE: sua contestação foi registrada apenas na planilha de teste. Nenhum supervisor foi acionado.</p>
+                    <div class="protocol" id="protocol"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Mapeamento de analistas do PILOTO. Troque pelos e-mails e supervisores de quem vai participar do teste
+        // (mantenha só essas pessoas: esta página fica pública). Os nomes abaixo são fictícios.
+        const analistas = {
+            "elisabete.oliva@turbi.com.br": "KAROLINE SILVA"
+     
+        };
+
+        // CÓPIA DE TESTE: cole aqui o endereço /exec do app da web do Apps Script (a planilha de TESTE).
+        // Enquanto estiver como exemplo.invalid, o envio fica desligado e nada é gravado.
+        const URL = 'https://script.google.com/a/macros/turbi.com.br/s/AKfycbyoSFgdn4pgModCY9a1yP_S67gNhZrGJAjZHW3Rn5IbqoxSD-r7BLppP-C_wac9Nid8Kw/exec';
+
+        // Inicializar dropdown
+        const select = document.getElementById('analista');
+        Object.keys(analistas).sort().forEach(email => {
+            const opt = document.createElement('option');
+            opt.value = email;
+            opt.text = email;
+            select.appendChild(opt);
+        });
+
+        // Atualizar supervisor
+        select.addEventListener('change', () => {
+            document.getElementById('supervisor').value = analistas[select.value] || '';
+        });
+
+        // Enviar formulário
+        document.getElementById('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validar
+            const chamado = document.getElementById('chamado').value.trim();
+            const analista = document.getElementById('analista').value;
+            const justificativa = document.getElementById('justificativa').value.trim();
+
+            if (!chamado || !analista || !justificativa) {
+                mostraErro('Preencha todos os campos obrigatórios');
+                return;
+            }
+
+            // Coletar critérios
+            const criterios = [];
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+                criterios.push(cb.value);
+            });
+
+            if (criterios.length === 0) {
+                mostraErro('Selecione pelo menos um critério');
+                return;
+            }
+
+            // Preparar dados
+            const supervisor = document.getElementById('supervisor').value;
+            const evidencia = document.getElementById('evidencia').value.trim() || null;
+            const nome = analista.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+            const protocolo = 'TURBI-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            const payload = {
+                timestamp: new Date().toISOString(),
+                chamado_id: chamado,
+                analista_email: analista,
+                analista_nome: nome,
+                supervisor: supervisor,
+                criterios: criterios,
+                justificativa: justificativa,
+                evidencia: evidencia,
+                status: 'ABERTO',
+                protocolo: protocolo
+            };
+
+            console.log('Enviando:', JSON.stringify(payload, null, 2));
+
+            try {
+                await fetch(URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                document.getElementById('protocol').textContent = 'Protocolo: ' + protocolo;
+                document.getElementById('success').classList.add('show');
+
+                setTimeout(() => {
+                    document.getElementById('form').reset();
+                    document.getElementById('supervisor').value = '';
+                    document.getElementById('success').classList.remove('show');
+                }, 3000);
+
+            } catch (err) {
+                mostraErro('Erro ao enviar. Tente novamente.');
+            }
+        });
+
+        function mostraErro(msg) {
+            const div = document.getElementById('errorDiv');
+            div.textContent = msg;
+            div.classList.add('show');
+            setTimeout(() => div.classList.remove('show'), 5000);
+        }
+    </script>
+
+    <!-- Pré-preenchimento: lê ?chamado=...&criterios=...&analista=... do endereço (arquivo prefill.js, na mesma pasta) -->
+    <script src="prefill.js"></script>
+</body>
+</html>
