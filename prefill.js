@@ -6,7 +6,8 @@
  *   ?chamado=MS-00394727&criterios=clara&analista=nome.sobrenome@turbi.com.br   (analista é opcional)
  *
  * chamado   -> número do ticket (letras, números, ponto, hífen e sublinhado; até 40 caracteres)
- * analista  -> e-mail do analista; só é usado se existir na lista da página (a página preenche o supervisor sozinha)
+ * analista  -> e-mail do analista (@turbi.com.br). Em página com campo de texto, preenche e trava o campo.
+ *              Em página com lista de analistas (select), só vale se o e-mail existir na lista.
  * criterios -> códigos separados por vírgula:
  *   clara            = Condução - Comunicação clara
  *   respostas        = Condução - Resposta a todas as perguntas
@@ -111,13 +112,25 @@
 
     if (analista) {
       pedidos++;
-      var lista = campoPorRotulo("Analista Responsavel", "select", false);
-      var valido = REGEX_EMAIL.test(analista);
-      var existe = valido && lista && Array.prototype.some.call(lista.options, function (o) { return o.value === analista; });
-      if (existe) { preencher(lista, analista); feitos++; relatorio.analista = "selecionado"; }
-      else if (!lista) relatorio.analista = "campo nao encontrado";
-      else if (!valido || ultima) { feitos++; relatorio.analista = "ignorado (nao esta na lista)"; }
-      else relatorio.analista = "aguardando a lista";
+      var campoAnalista = campoPorRotulo("Analista Responsavel", "select, input", false);
+      if (!campoAnalista) {
+        relatorio.analista = "campo nao encontrado";
+      } else if (!REGEX_EMAIL.test(analista)) {
+        feitos++;   // e-mail fora do padrão da Turbi: ignorado de propósito
+        relatorio.analista = "ignorado (e-mail invalido)";
+      } else if (campoAnalista.tagName === "SELECT") {
+        // página com lista de analistas: só vale se o e-mail existir na lista
+        var existe = Array.prototype.some.call(campoAnalista.options, function (o) { return o.value === analista; });
+        if (existe) { preencher(campoAnalista, analista); feitos++; relatorio.analista = "selecionado"; }
+        else if (ultima) { feitos++; relatorio.analista = "ignorado (nao esta na lista)"; }
+        else relatorio.analista = "aguardando a lista";
+      } else {
+        // campo de texto: preenche e TRAVA (o e-mail veio do site, quem contesta não precisa digitar nem trocar)
+        preencher(campoAnalista, analista);
+        campoAnalista.readOnly = true;
+        feitos++;
+        relatorio.analista = "preenchido (travado)";
+      }
     }
 
     codigos.forEach(function (codigo) {
