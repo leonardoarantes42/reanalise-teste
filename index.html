@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contestação de Monitoria — Turbi (CÓPIA DE TESTE)</title>
+    <title>Contestação de Monitoria — Turbi</title>
     <style>
         * {
             margin: 0;
@@ -70,6 +70,34 @@
             margin-bottom: 25px;
             font-size: 13px;
             color: #92400e;
+        }
+
+        .aviso {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 13px;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .aviso.show {
+            display: block;
+        }
+
+        input[readonly] {
+            background-color: #f5f5f5;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .section {
@@ -315,11 +343,12 @@
         </div>
 
         <div class="content">
-            <p class="teste"><b>CÓPIA DE TESTE.</b> As contestações enviadas aqui NÃO chegam ao time de qualidade: vão para uma planilha de teste. Esta não é a página oficial.</p>
+            <p class="teste" id="avisoPiloto"><b>PILOTO.</b> Esta contestação é registrada na planilha do piloto de Qualidade (Painel Qualidade).</p>
 
-            <p class="intro">Registre sua contestação de reanálise. Os dados são salvos diretamente na planilha de controle.</p>
+            <p class="intro">Registre sua contestação de reanálise. Prefira abrir esta página pelo botão <b>Contestar</b> do site: o ticket e os critérios já vêm preenchidos.</p>
 
-            <div class="error" id="errorDiv"></div>
+            <div class="error" id="errorDiv" role="alert"></div>
+            <div class="aviso" id="avisoDiv" role="status"></div>
 
             <form id="form">
                 <!-- SEÇÃO 1 -->
@@ -342,21 +371,13 @@
                     <div class="section-header">
                         <div class="section-number">2</div>
                         <div>
-                            <h2 class="section-title">Responsáveis</h2>
-                            <p class="section-subtitle">Analista e supervisor da contestação</p>
+                            <h2 class="section-title">Responsável</h2>
+                            <p class="section-subtitle">Quem está contestando (vem preenchido pelo site)</p>
                         </div>
                     </div>
-                    <div class="two-cols">
-                        <div class="form-group">
-                            <label for="analista">Analista Responsável <span class="required">*</span></label>
-                            <select id="analista" required>
-                                <option value="">— Selecione —</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="supervisor">Supervisor</label>
-                            <input type="text" id="supervisor" disabled>
-                        </div>
+                    <div class="form-group">
+                        <label for="analista">Analista Responsável <span class="required">*</span></label>
+                        <input type="text" id="analista" inputmode="email" autocomplete="off" placeholder="nome.sobrenome@turbi.com.br" required>
                     </div>
                 </div>
 
@@ -417,14 +438,14 @@
                 </div>
 
                 <div class="buttons">
-                    <button type="submit">Registrar Reanálise</button>
+                    <button type="submit" id="enviar">Registrar Reanálise</button>
                     <button type="reset">Nova Reanálise</button>
                 </div>
 
-                <div class="success" id="success">
+                <div class="success" id="success" role="status">
                     <div class="success-icon">✅</div>
-                    <h3>Reanálise Registrada com Sucesso!</h3>
-                    <p>TESTE: sua contestação foi registrada apenas na planilha de teste. Nenhum supervisor foi acionado.</p>
+                    <h3 id="successTitulo">Contestação registrada!</h3>
+                    <p id="successTexto"></p>
                     <div class="protocol" id="protocol"></div>
                 </div>
             </form>
@@ -432,105 +453,136 @@
     </div>
 
     <script>
-        // Mapeamento de analistas do PILOTO. Troque pelos e-mails e supervisores de quem vai participar do teste
-        // (mantenha só essas pessoas: esta página fica pública). Os nomes abaixo são fictícios.
-        const analistas = {
-            "elisabete.oliva@turbi.com.br": "KAROLINE SILVA"
-     
+        // ===== CONFIGURAÇÃO =====
+        // Endereço do receptor (app da web do Apps Script do Painel Qualidade; termina em /exec).
+        const ENDERECO_ENVIO = 'https://script.google.com/macros/s/AKfycbyfyQso_OA-x5-MtFybpM9B1NF8ruP_QFkmQ__kjxkl8XYIwF7gJJ5MJ63OZSOXK8J4bw/exec';
+        // true mostra o aviso "PILOTO" no topo; false esconde.
+        const MODO_PILOTO = true;
+
+        const REGEX_CHAMADO = /^[A-Za-z0-9._-]{1,40}$/;
+        const REGEX_EMAIL = /^[a-z0-9._-]+@turbi\.com\.br$/;
+
+        // O receptor responde com um motivo curto; aqui ele vira uma frase para quem está contestando.
+        const MENSAGENS_DO_RECEPTOR = {
+            'Analista fora da lista do piloto.': 'Seu e-mail não está na lista do piloto. Fale com o Planejamento.',
+            'Analista inválido.': 'Use seu e-mail corporativo (@turbi.com.br).',
+            'Chamado inválido.': 'O ID do chamado não é válido. Use o número do ticket (ex.: MS-00411533).',
+            'Critérios inválidos.': 'Selecione pelo menos um critério.',
+            'Justificativa inválida.': 'Escreva a justificativa (até 4.000 caracteres).',
+            'Muitos envios em pouco tempo.': 'Muitos envios em pouco tempo. Aguarde um minuto e tente de novo.'
         };
 
-        // CÓPIA DE TESTE: cole aqui o endereço /exec do app da web do Apps Script (a planilha de TESTE).
-        // Enquanto estiver como exemplo.invalid, o envio fica desligado e nada é gravado.
-        const URL = 'https://script.google.com/macros/s/AKfycbyfyQso_OA-x5-MtFybpM9B1NF8ruP_QFkmQ__kjxkl8XYIwF7gJJ5MJ63OZSOXK8J4bw/exec';
+        const $ = id => document.getElementById(id);
+        const form = $('form');
+        const botaoEnviar = $('enviar');
+        let enviando = false;
 
-        // Inicializar dropdown
-        const select = document.getElementById('analista');
-        Object.keys(analistas).sort().forEach(email => {
-            const opt = document.createElement('option');
-            opt.value = email;
-            opt.text = email;
-            select.appendChild(opt);
+        if (!MODO_PILOTO) $('avisoPiloto').remove();
+
+        function limparMensagens() {
+            $('errorDiv').classList.remove('show');
+            $('avisoDiv').classList.remove('show');
+            $('success').classList.remove('show');
+        }
+
+        function mostraErro(msg) {
+            const div = $('errorDiv');
+            div.textContent = msg;
+            div.classList.add('show');
+            div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function mostraAviso(msg) {
+            const div = $('avisoDiv');
+            div.textContent = msg;
+            div.classList.add('show');
+            div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function liberarEnvio() {
+            enviando = false;
+            botaoEnviar.disabled = false;
+            botaoEnviar.textContent = 'Registrar Reanálise';
+        }
+
+        // "Nova Reanálise": limpa tudo e destrava o analista (o reset apaga o valor que veio do site)
+        form.addEventListener('reset', () => {
+            limparMensagens();
+            liberarEnvio();
+            $('analista').readOnly = false;
         });
 
-        // Atualizar supervisor
-        select.addEventListener('change', () => {
-            document.getElementById('supervisor').value = analistas[select.value] || '';
-        });
-
-        // Enviar formulário
-        document.getElementById('form').addEventListener('submit', async (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (enviando) return;   // um segundo clique não envia de novo (era assim que a Mestra recebia a mesma contestação 3 e 4 vezes)
+            limparMensagens();
 
-            // Validar
-            const chamado = document.getElementById('chamado').value.trim();
-            const analista = document.getElementById('analista').value;
-            const justificativa = document.getElementById('justificativa').value.trim();
+            const chamado = $('chamado').value.trim();
+            const analista = $('analista').value.trim().toLowerCase();
+            const justificativa = $('justificativa').value.trim();
+            const evidencia = $('evidencia').value.trim() || null;
+            const criterios = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
 
-            if (!chamado || !analista || !justificativa) {
-                mostraErro('Preencha todos os campos obrigatórios');
-                return;
-            }
+            if (!REGEX_CHAMADO.test(chamado)) return mostraErro('Informe o ID do chamado (ex.: MS-00411533).');
+            if (!REGEX_EMAIL.test(analista)) return mostraErro('Informe seu e-mail corporativo (@turbi.com.br).');
+            if (criterios.length === 0) return mostraErro('Selecione pelo menos um critério.');
+            if (!justificativa) return mostraErro('Escreva a justificativa.');
+            if (ENDERECO_ENVIO.indexOf('exemplo.invalid') !== -1) return mostraErro('O envio ainda não foi configurado nesta página (ENDERECO_ENVIO).');
 
-            // Coletar critérios
-            const criterios = [];
-            document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-                criterios.push(cb.value);
-            });
-
-            if (criterios.length === 0) {
-                mostraErro('Selecione pelo menos um critério');
-                return;
-            }
-
-            // Preparar dados
-            const supervisor = document.getElementById('supervisor').value;
-            const evidencia = document.getElementById('evidencia').value.trim() || null;
-            const nome = analista.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
-            const protocolo = 'TURBI-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-
+            const protocolo = 'TURBI-' + Date.now() + '-' + (Math.random().toString(36) + '000000').substring(2, 8).toUpperCase();
             const payload = {
                 timestamp: new Date().toISOString(),
                 chamado_id: chamado,
                 analista_email: analista,
-                analista_nome: nome,
-                supervisor: supervisor,
                 criterios: criterios,
                 justificativa: justificativa,
                 evidencia: evidencia,
-                status: 'ABERTO',
                 protocolo: protocolo
             };
 
-            console.log('Enviando:', JSON.stringify(payload, null, 2));
+            enviando = true;
+            botaoEnviar.disabled = true;
+            botaoEnviar.textContent = 'Enviando…';
 
+            // O receptor responde em JSON ({ok:true} ou {ok:false, erro:"..."}). Content-Type text/plain evita a consulta prévia do navegador.
+            let resposta = null;
+            let leuResposta = false;
             try {
-                await fetch(URL, {
+                const r = await fetch(ENDERECO_ENVIO, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
+                resposta = await r.json();
+                leuResposta = true;
+            } catch (erro) {
+                leuResposta = false;
+            }
 
-                document.getElementById('protocol').textContent = 'Protocolo: ' + protocolo;
-                document.getElementById('success').classList.add('show');
+            if (leuResposta && resposta && resposta.ok) {
+                const repetida = resposta.duplicada === true;
+                $('successTitulo').textContent = repetida ? 'Esta contestação já estava registrada' : 'Contestação registrada!';
+                $('successTexto').textContent = repetida
+                    ? 'Você já contestou este ticket há poucos minutos. Não é preciso enviar de novo.'
+                    : 'A Qualidade vai acompanhar o andamento. O status aparece no ticket, no site.';
+                const protocoloFinal = resposta.protocolo || protocolo;
+                $('protocol').textContent = repetida ? '' : 'Protocolo: ' + protocoloFinal;
+                $('protocol').style.display = repetida ? 'none' : 'block';
+                $('success').classList.add('show');
+                $('success').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                botaoEnviar.textContent = 'Registrada';   // fica travado até "Nova Reanálise"
+                return;
+            }
 
-                setTimeout(() => {
-                    document.getElementById('form').reset();
-                    document.getElementById('supervisor').value = '';
-                    document.getElementById('success').classList.remove('show');
-                }, 3000);
-
-            } catch (err) {
-                mostraErro('Erro ao enviar. Tente novamente.');
+            liberarEnvio();
+            if (leuResposta) {
+                mostraErro(MENSAGENS_DO_RECEPTOR[resposta && resposta.erro] || 'Não foi possível registrar agora. Tente novamente em instantes.');
+            } else if (navigator.onLine === false) {
+                mostraErro('Sem conexão com a internet. Tente de novo quando voltar.');
+            } else {
+                mostraAviso('Enviamos, mas não conseguimos confirmar o registro. Aguarde alguns minutos: se a contestação aparecer no ticket, no site, está tudo certo. Se não aparecer, envie de novo (repetições são ignoradas).');
             }
         });
-
-        function mostraErro(msg) {
-            const div = document.getElementById('errorDiv');
-            div.textContent = msg;
-            div.classList.add('show');
-            setTimeout(() => div.classList.remove('show'), 5000);
-        }
     </script>
 
     <!-- Pré-preenchimento: lê ?chamado=...&criterios=...&analista=... do endereço (arquivo prefill.js, na mesma pasta) -->
