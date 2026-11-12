@@ -576,7 +576,7 @@
 
             liberarEnvio();
             if (leuResposta) {
-                mostraErro(MENSAGENS_DO_RECEPTOR[resposta && resposta.erro] || 'Não foi possível registrar agora. Tente novamente em instantes.');
+                mostraErro(MENSAGENS_DO_RECEPTOR[resposta && resposta.erro] || (resposta && resposta.erro) || 'Não foi possível registrar agora. Tente novamente em instantes.');
             } else if (navigator.onLine === false) {
                 mostraErro('Sem conexão com a internet. Tente de novo quando voltar.');
             } else {
